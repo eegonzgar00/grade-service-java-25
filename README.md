@@ -13,7 +13,7 @@ Este proyecto está diseñado para **explorar y demostrar las nuevas funciones d
 ---
 
 ## ✨ Características de Java 25 usadas
-- ✅ **Compact Source Files & Instance Main (JEP 512)** → programa sin `public class` y con `main()` simplificado.
+- ✅ **Compact Source Files & Instance FuncionServicios (JEP 512)** → programa sin `public class` y con `main()` simplificado.
 - ✅ **Pattern Matching con primitivos (JEP 507)** → uso de `switch` con condiciones directas en `int`.
 - ✅ **Module Import Declarations (JEP 511)** → importar módulos completos (`import module`).
 
