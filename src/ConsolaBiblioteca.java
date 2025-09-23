@@ -2,8 +2,12 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ConsolaBiblioteca {
-    private final Biblioteca biblioteca = new Biblioteca();
+    private final BibliotecaService biblioteca; // depende de la INTERFAZ
     private final Scanner sc = new Scanner(System.in);
+
+    public ConsolaBiblioteca(BibliotecaService biblioteca) {
+        this.biblioteca = biblioteca;
+    }
 
     public void iniciar() {
         while (true) {
@@ -63,7 +67,7 @@ public class ConsolaBiblioteca {
         if (biblioteca.prestar(indice)) {
             System.out.println("📕 Libro prestado.");
         } else {
-            System.out.println("❌ No se pudo prestar (índice inválido o ya prestado).");
+            System.out.println("❌ No se pudo prestar.");
         }
     }
 
@@ -75,15 +79,14 @@ public class ConsolaBiblioteca {
         if (biblioteca.devolver(indice)) {
             System.out.println("📖 Libro devuelto.");
         } else {
-            System.out.println("❌ No se pudo devolver (índice inválido o ya disponible).");
+            System.out.println("❌ No se pudo devolver.");
         }
     }
 
     private void listarLibros() {
         List<Libro> libros = biblioteca.getLibros();
-
         if (libros.isEmpty()) {
-            System.out.println("⚠️ No hay libros en la biblioteca.");
+            System.out.println("⚠️ No hay libros.");
         } else {
             mostrarLista(libros);
         }
@@ -93,8 +96,7 @@ public class ConsolaBiblioteca {
         for (int i = 0; i < libros.size(); i++) {
             var l = libros.get(i);
             System.out.printf("%d. %s (%s, %d) [%s]\n",
-                    i + 1, l.titulo(), l.autor(), l.anio(),
-                    l.disponible() ? "Disponible ✅" : "Prestado ❌");
+                    i + 1, l.titulo(), l.autor(), l.anio(), l.estado());
         }
     }
 
