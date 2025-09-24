@@ -2,10 +2,10 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ConsolaBiblioteca {
-    private final BibliotecaService biblioteca; // depende de la INTERFAZ
+    private final IBibliotecaService biblioteca; // depende de la INTERFAZ
     private final Scanner sc = new Scanner(System.in);
 
-    public ConsolaBiblioteca(BibliotecaService biblioteca) {
+    public ConsolaBiblioteca(IBibliotecaService biblioteca) {
         this.biblioteca = biblioteca;
     }
 
