@@ -5,17 +5,19 @@ import java.util.List;
 public class BibliotecaFrame extends JFrame {
     private final IBibliotecaService biblioteca;
     private final DefaultListModel<String> modeloLibros;
+    private final JList<String> listaLibros;
 
     public BibliotecaFrame(IBibliotecaService biblioteca) {
         this.biblioteca = biblioteca;
         this.modeloLibros = new DefaultListModel<>();
+        this.listaLibros = new JList<>(modeloLibros);
 
         setTitle("Biblioteca Digital");
         setSize(600, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Panel de botones
+        // Panel botones
         JPanel panelBotones = new JPanel();
         JButton btnRegistrar = new JButton("Registrar libro");
         JButton btnBuscar = new JButton("Buscar");
@@ -29,17 +31,18 @@ public class BibliotecaFrame extends JFrame {
         panelBotones.add(btnDevolver);
         panelBotones.add(btnListar);
 
-        // Lista de libros
-        JList<String> listaLibros = new JList<>(modeloLibros);
+        // Lista
         JScrollPane scroll = new JScrollPane(listaLibros);
 
-        // Añadir componentes
         setLayout(new BorderLayout());
         add(panelBotones, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
 
         // Eventos
         btnRegistrar.addActionListener(e -> registrarLibro());
+        btnBuscar.addActionListener(e -> buscarLibro());
+        btnPrestar.addActionListener(e -> prestarLibro());
+        btnDevolver.addActionListener(e -> devolverLibro());
         btnListar.addActionListener(e -> listarLibros());
     }
 
@@ -49,6 +52,39 @@ public class BibliotecaFrame extends JFrame {
         int anio = Integer.parseInt(JOptionPane.showInputDialog(this, "Año:"));
         biblioteca.registrarLibro(titulo, autor, anio);
         listarLibros();
+    }
+
+    private void buscarLibro() {
+        String texto = JOptionPane.showInputDialog(this, "Buscar:");
+        List<Libro> resultados = biblioteca.buscar(texto);
+        modeloLibros.clear();
+        if (resultados.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "⚠️ No se encontraron libros.");
+        } else {
+            for (Libro l : resultados) {
+                modeloLibros.addElement(l.titulo() + " - " + l.autor() + " (" + l.anio() + ") [" + l.estado() + "]");
+            }
+        }
+    }
+
+    private void prestarLibro() {
+        int indice = listaLibros.getSelectedIndex();
+        if (indice != -1 && biblioteca.prestar(indice)) {
+            JOptionPane.showMessageDialog(this, "📕 Libro prestado.");
+            listarLibros();
+        } else {
+            JOptionPane.showMessageDialog(this, "❌ No se pudo prestar.");
+        }
+    }
+
+    private void devolverLibro() {
+        int indice = listaLibros.getSelectedIndex();
+        if (indice != -1 && biblioteca.devolver(indice)) {
+            JOptionPane.showMessageDialog(this, "📖 Libro devuelto.");
+            listarLibros();
+        } else {
+            JOptionPane.showMessageDialog(this, "❌ No se pudo devolver.");
+        }
     }
 
     private void listarLibros() {
