@@ -79,6 +79,11 @@ public class BibliotecaFrame extends JFrame {
 
     private void buscarLibro() {
         String texto = JOptionPane.showInputDialog(this, "Buscar:");
+        if (texto == null || texto.isBlank()) {
+            JOptionPane.showMessageDialog(this, "⚠️ Ingresa algo para buscar.");
+            return;
+        }
+
         List<Libro> resultados = biblioteca.buscar(texto);
         modeloLibros.clear();
         if (resultados.isEmpty()) {
