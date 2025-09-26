@@ -48,9 +48,32 @@ public class BibliotecaFrame extends JFrame {
 
     private void registrarLibro() {
         String titulo = JOptionPane.showInputDialog(this, "Título:");
+        if (titulo == null || titulo.isBlank()) {
+            JOptionPane.showMessageDialog(this, "⚠️ El título no puede estar vacío.");
+            return;
+        }
+
         String autor = JOptionPane.showInputDialog(this, "Autor:");
-        int anio = Integer.parseInt(JOptionPane.showInputDialog(this, "Año:"));
+        if (autor == null || autor.isBlank()) {
+            JOptionPane.showMessageDialog(this, "⚠️ El autor no puede estar vacío.");
+            return;
+        }
+
+        String anioStr = JOptionPane.showInputDialog(this, "Año:");
+        int anio;
+        try {
+            anio = Integer.parseInt(anioStr);
+            if (anio < 0 || anio > java.time.Year.now().getValue()) {
+                JOptionPane.showMessageDialog(this, "⚠️ Año inválido.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "⚠️ Debes ingresar un número para el año.");
+            return;
+        }
+
         biblioteca.registrarLibro(titulo, autor, anio);
+        JOptionPane.showMessageDialog(this, "📚 Libro registrado con éxito.");
         listarLibros();
     }
 
