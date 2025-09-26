@@ -92,11 +92,16 @@ public class BibliotecaFrame extends JFrame {
 
     private void prestarLibro() {
         int indice = listaLibros.getSelectedIndex();
-        if (indice != -1 && biblioteca.prestar(indice)) {
+        if (indice == -1) {
+            JOptionPane.showMessageDialog(this, "⚠️ Selecciona un libro de la lista.");
+            return;
+        }
+
+        if (biblioteca.prestar(indice)) {
             JOptionPane.showMessageDialog(this, "📕 Libro prestado.");
             listarLibros();
         } else {
-            JOptionPane.showMessageDialog(this, "❌ No se pudo prestar.");
+            JOptionPane.showMessageDialog(this, "❌ El libro ya está prestado.");
         }
     }
 
