@@ -6,7 +6,7 @@ public class Biblioteca  implements IBibliotecaService{
 
     @Override
     public void registrarLibro(String titulo, String autor, int anio) {
-        libros.add(new Libro(titulo, autor, anio, EstadoLibro.DISPONIBLE));
+        libros.add(new Libro(titulo, autor, anio));
     }
 
     @Override
