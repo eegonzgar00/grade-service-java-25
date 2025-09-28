@@ -1,96 +1,77 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.UUID;
 
 public class BibliotecaFrame extends JFrame {
     private final IBibliotecaService biblioteca;
-    private final DefaultListModel<String> modeloLibros;
-    private final JList<String> listaLibros;
+    private final DefaultListModel<String> modeloLista = new DefaultListModel<>();
+    private final JList<String> listaLibros = new JList<>(modeloLista);
 
     public BibliotecaFrame(IBibliotecaService biblioteca) {
         this.biblioteca = biblioteca;
-        this.modeloLibros = new DefaultListModel<>();
-        this.listaLibros = new JList<>(modeloLibros);
-
-        setTitle("Biblioteca Digital");
-        setSize(600, 400);
+        setTitle("📚 Biblioteca Digital");
+        setSize(500, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Panel botones
-        JPanel panelBotones = new JPanel();
+        // Botones
         JButton btnRegistrar = new JButton("Registrar libro");
-        JButton btnBuscar = new JButton("Buscar");
-        JButton btnPrestar = new JButton("Prestar");
-        JButton btnDevolver = new JButton("Devolver");
-        JButton btnListar = new JButton("Listar");
+        JButton btnBuscar = new JButton("Buscar libro");
+        JButton btnPrestar = new JButton("Prestar libro");
+        JButton btnDevolver = new JButton("Devolver libro");
 
+        // Panel de botones
+        JPanel panelBotones = new JPanel();
         panelBotones.add(btnRegistrar);
         panelBotones.add(btnBuscar);
         panelBotones.add(btnPrestar);
         panelBotones.add(btnDevolver);
-        panelBotones.add(btnListar);
 
-        // Lista
-        JScrollPane scroll = new JScrollPane(listaLibros);
-
-        setLayout(new BorderLayout());
-        add(panelBotones, BorderLayout.NORTH);
-        add(scroll, BorderLayout.CENTER);
+        add(new JScrollPane(listaLibros), BorderLayout.CENTER);
+        add(panelBotones, BorderLayout.SOUTH);
 
         // Eventos
         btnRegistrar.addActionListener(e -> registrarLibro());
-        btnBuscar.addActionListener(e -> buscarLibro());
+        btnBuscar.addActionListener(e -> buscarLibros());
         btnPrestar.addActionListener(e -> prestarLibro());
         btnDevolver.addActionListener(e -> devolverLibro());
-        btnListar.addActionListener(e -> listarLibros());
+
+        listarLibros(); // cargar al inicio
     }
 
     private void registrarLibro() {
-        String titulo = JOptionPane.showInputDialog(this, "Título:");
-        if (titulo == null || titulo.isBlank()) {
-            JOptionPane.showMessageDialog(this, "⚠️ El título no puede estar vacío.");
-            return;
-        }
+        String titulo = JOptionPane.showInputDialog(this, "Título del libro:");
+        if (titulo == null || titulo.isBlank()) return;
 
         String autor = JOptionPane.showInputDialog(this, "Autor:");
-        if (autor == null || autor.isBlank()) {
-            JOptionPane.showMessageDialog(this, "⚠️ El autor no puede estar vacío.");
-            return;
-        }
+        if (autor == null || autor.isBlank()) return;
 
-        String anioStr = JOptionPane.showInputDialog(this, "Año:");
-        int anio;
+        String anioStr = JOptionPane.showInputDialog(this, "Año de publicación:");
+        if (anioStr == null || anioStr.isBlank()) return;
+
         try {
-            anio = Integer.parseInt(anioStr);
-            if (anio < 0 || anio > java.time.Year.now().getValue()) {
-                JOptionPane.showMessageDialog(this, "⚠️ Año inválido.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "⚠️ Debes ingresar un número para el año.");
-            return;
+            int anio = Integer.parseInt(anioStr);
+            biblioteca.registrarLibro(titulo, autor, anio);
+            listarLibros();
+            JOptionPane.showMessageDialog(this, "📚 Libro registrado.");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "⚠️ Año inválido.");
         }
-
-        biblioteca.registrarLibro(titulo, autor, anio);
-        JOptionPane.showMessageDialog(this, "📚 Libro registrado con éxito.");
-        listarLibros();
     }
 
-    private void buscarLibro() {
-        String texto = JOptionPane.showInputDialog(this, "Buscar:");
-        if (texto == null || texto.isBlank()) {
-            JOptionPane.showMessageDialog(this, "⚠️ Ingresa algo para buscar.");
-            return;
-        }
+    private void buscarLibros() {
+        String texto = JOptionPane.showInputDialog(this, "Texto a buscar:");
+        if (texto == null || texto.isBlank()) return;
 
         List<Libro> resultados = biblioteca.buscar(texto);
-        modeloLibros.clear();
+        modeloLista.clear();
+
         if (resultados.isEmpty()) {
             JOptionPane.showMessageDialog(this, "⚠️ No se encontraron libros.");
         } else {
             for (Libro l : resultados) {
-                modeloLibros.addElement(l.titulo() + " - " + l.autor() + " (" + l.anio() + ") [" + l.estado() + "]");
+                modeloLista.addElement(formatoLibro(l));
             }
         }
     }
@@ -102,17 +83,28 @@ public class BibliotecaFrame extends JFrame {
             return;
         }
 
-        if (biblioteca.prestar(indice)) {
+        Libro seleccionado = biblioteca.getLibros().get(indice);
+        UUID id = seleccionado.id();
+
+        if (biblioteca.prestar(id)) {
             JOptionPane.showMessageDialog(this, "📕 Libro prestado.");
             listarLibros();
         } else {
-            JOptionPane.showMessageDialog(this, "❌ El libro ya está prestado.");
+            JOptionPane.showMessageDialog(this, "❌ No se pudo prestar.");
         }
     }
 
     private void devolverLibro() {
         int indice = listaLibros.getSelectedIndex();
-        if (indice != -1 && biblioteca.devolver(indice)) {
+        if (indice == -1) {
+            JOptionPane.showMessageDialog(this, "⚠️ Selecciona un libro de la lista.");
+            return;
+        }
+
+        Libro seleccionado = biblioteca.getLibros().get(indice);
+        UUID id = seleccionado.id();
+
+        if (biblioteca.devolver(id)) {
             JOptionPane.showMessageDialog(this, "📖 Libro devuelto.");
             listarLibros();
         } else {
@@ -121,10 +113,18 @@ public class BibliotecaFrame extends JFrame {
     }
 
     private void listarLibros() {
-        modeloLibros.clear();
-        List<Libro> libros = biblioteca.getLibros();
-        for (Libro l : libros) {
-            modeloLibros.addElement(l.titulo() + " - " + l.autor() + " (" + l.anio() + ") [" + l.estado() + "]");
+        modeloLista.clear();
+        for (Libro l : biblioteca.getLibros()) {
+            modeloLista.addElement(formatoLibro(l));
         }
+    }
+
+    private String formatoLibro(Libro l) {
+        return "%s (%s, %d) [%s]".formatted(l.titulo(), l.autor(), l.anio(), l.estado());
+    }
+
+    public static void main(String[] args) {
+        IBibliotecaService biblioteca = new BibliotecaServiceImpl();
+        SwingUtilities.invokeLater(() -> new BibliotecaFrame(biblioteca).setVisible(true));
     }
 }
