@@ -56,9 +56,13 @@ public class BibliotecaFrame extends JFrame {
             listarLibros();
             JOptionPane.showMessageDialog(this, "📚 Libro registrado.");
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "⚠️ Año inválido.");
+            JOptionPane.showMessageDialog(this, "⚠️ Año inválido. Ingresa un número.");
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, "⚠️ " + ex.getMessage());
+            // Aquí se muestra "El año no es válido" o cualquier otro mensaje del record
         }
     }
+
 
     private void buscarLibros() {
         String texto = JOptionPane.showInputDialog(this, "Texto a buscar:");
