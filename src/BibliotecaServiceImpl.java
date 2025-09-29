@@ -37,7 +37,7 @@ public class BibliotecaServiceImpl implements IBibliotecaService {
     public List<Libro> getLibros() {
         return List.copyOf(libros); // inmutable
     }
-    
+
     private boolean cambiarEstado(UUID id, EstadoLibro estadoActual, EstadoLibro nuevoEstado) {
         Optional<Libro> libroOpt = libros.stream()
                 .filter(l -> l.id().equals(id) && l.estado() == estadoActual)
