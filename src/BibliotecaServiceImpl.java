@@ -2,6 +2,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class BibliotecaServiceImpl implements IBibliotecaService {
+
     private final List<Libro> libros = new ArrayList<>();
 
     @Override
@@ -11,44 +12,43 @@ public class BibliotecaServiceImpl implements IBibliotecaService {
 
     @Override
     public List<Libro> buscar(String texto) {
-        String query = texto.toLowerCase(Locale.ROOT);
+        var query = texto.toLowerCase();
         return libros.stream()
-                .filter(l -> l.titulo().toLowerCase(Locale.ROOT).contains(query)
-                        || l.autor().toLowerCase(Locale.ROOT).contains(query))
+                .filter(l -> l.titulo().toLowerCase().contains(query)
+                        || l.autor().toLowerCase().contains(query))
                 .collect(Collectors.toList());
     }
 
     @Override
     public boolean prestar(UUID id) {
-        return cambiarEstado(id, EstadoLibro.DISPONIBLE, EstadoLibro.PRESTADO);
+        return actualizarEstado(id, EstadoLibro.PRESTADO);
     }
 
     @Override
     public boolean devolver(UUID id) {
-        return cambiarEstado(id, EstadoLibro.PRESTADO, EstadoLibro.DISPONIBLE);
+        return actualizarEstado(id, EstadoLibro.DISPONIBLE);
     }
 
     @Override
     public boolean reservar(UUID id) {
-        return cambiarEstado(id, EstadoLibro.DISPONIBLE, EstadoLibro.RESERVADO);
+        return actualizarEstado(id, EstadoLibro.RESERVADO);
+    }
+
+    private boolean actualizarEstado(UUID id, EstadoLibro nuevoEstado) {
+        Optional<Libro> encontrado = libros.stream()
+                .filter(l -> l.id().equals(id))
+                .findFirst();
+
+        if (encontrado.isEmpty()) return false;
+
+        Libro l = encontrado.get();
+        libros.remove(l);
+        libros.add(new Libro(l.id(), l.titulo(), l.autor(), l.anio(), nuevoEstado));
+        return true;
     }
 
     @Override
     public List<Libro> getLibros() {
-        return List.copyOf(libros); // inmutable
-    }
-
-    private boolean cambiarEstado(UUID id, EstadoLibro estadoActual, EstadoLibro nuevoEstado) {
-        Optional<Libro> libroOpt = libros.stream()
-                .filter(l -> l.id().equals(id) && l.estado() == estadoActual)
-                .findFirst();
-
-        if (libroOpt.isPresent()) {
-            Libro libro = libroOpt.get();
-            libros.set(libros.indexOf(libro),
-                    new Libro(libro.id(), libro.titulo(), libro.autor(), libro.anio(), nuevoEstado));
-            return true;
-        }
-        return false;
+        return List.copyOf(libros);
     }
 }
