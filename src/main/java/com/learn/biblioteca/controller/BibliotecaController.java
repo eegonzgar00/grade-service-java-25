@@ -1,7 +1,10 @@
 package com.learn.biblioteca.controller;
 
+import com.learn.biblioteca.dto.LibroRequest;
 import com.learn.biblioteca.model.Libro;
 import com.learn.biblioteca.service.IBibliotecaService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,22 +21,27 @@ public class BibliotecaController {
     }
 
     @GetMapping
-    public List<Libro> listar() {
-        return service.getLibros();
+    public ResponseEntity<List<Libro>> listar() {
+        return ResponseEntity.ok(service.getLibros());
     }
 
     @PostMapping
-    public void registrar(@RequestBody Libro libro) {
-        service.registrarLibro(libro.titulo(), libro.autor(), libro.anio());
+    public ResponseEntity<String> registrar(@Valid @RequestBody LibroRequest request) {
+        service.registrarLibro(request.titulo(), request.autor(), request.anio());
+        return ResponseEntity.ok("📚 Libro registrado con éxito");
     }
 
     @PostMapping("/{id}/prestar")
-    public void prestar(@PathVariable UUID id) {
-        service.prestar(id);
+    public ResponseEntity<String> prestar(@PathVariable UUID id) {
+        return service.prestar(id)
+                ? ResponseEntity.ok("📕 Libro prestado")
+                : ResponseEntity.badRequest().body("No se pudo prestar el libro");
     }
 
     @PostMapping("/{id}/devolver")
-    public void devolver(@PathVariable UUID id) {
-        service.devolver(id);
+    public ResponseEntity<String> devolver(@PathVariable UUID id) {
+        return service.devolver(id)
+                ? ResponseEntity.ok("📖 Libro devuelto")
+                : ResponseEntity.badRequest().body("No se pudo devolver el libro");
     }
 }
