@@ -2,7 +2,6 @@ package com.learn.biblioteca.controller;
 
 import com.learn.biblioteca.dto.LibroRequest;
 import com.learn.biblioteca.model.Libro;
-import com.learn.biblioteca.service.IBibliotecaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
