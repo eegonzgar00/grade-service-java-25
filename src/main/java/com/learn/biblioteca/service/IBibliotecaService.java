@@ -1,3 +1,7 @@
+package com.learn.biblioteca.service;
+
+import com.learn.biblioteca.model.Libro;
+
 import java.util.List;
 import java.util.UUID;
 
