@@ -1,3 +1,8 @@
+package com.learn.biblioteca.service;
+
+import com.learn.biblioteca.model.EstadoLibro;
+import com.learn.biblioteca.model.Libro;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
