@@ -68,9 +68,3 @@ public record Libro(UUID id, String titulo, String autor, int anio, EstadoLibro 
         return descripcionCorta();
     }
 }
-
-enum EstadoLibro {
-    DISPONIBLE,
-    PRESTADO,
-    RESERVADO
-}
