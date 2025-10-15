@@ -1,59 +1,105 @@
 package com.learn.biblioteca.service;
 
-import com.learn.biblioteca.model.EstadoLibro;
-import com.learn.biblioteca.model.Libro;
-
+import com.learn.biblioteca.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BibliotecaServiceImpl implements IBibliotecaService {
 
+    private static final Logger log = LoggerFactory.getLogger(BibliotecaServiceImpl.class);
     private final List<Libro> libros = new ArrayList<>();
 
     @Override
     public void registrarLibro(String titulo, String autor, int anio) {
-        libros.add(new Libro(titulo, autor, anio));
-    }
-
-    @Override
-    public List<Libro> buscar(String texto) {
-        var query = texto.toLowerCase();
-        return libros.stream()
-                .filter(l -> l.titulo().toLowerCase().contains(query)
-                        || l.autor().toLowerCase().contains(query))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean prestar(UUID id) {
-        return actualizarEstado(id, EstadoLibro.PRESTADO);
-    }
-
-    @Override
-    public boolean devolver(UUID id) {
-        return actualizarEstado(id, EstadoLibro.DISPONIBLE);
-    }
-
-    @Override
-    public boolean reservar(UUID id) {
-        return actualizarEstado(id, EstadoLibro.RESERVADO);
-    }
-
-    private boolean actualizarEstado(UUID id, EstadoLibro nuevoEstado) {
-        Optional<Libro> encontrado = libros.stream()
-                .filter(l -> l.id().equals(id))
-                .findFirst();
-
-        if (encontrado.isEmpty()) return false;
-
-        Libro l = encontrado.get();
-        libros.remove(l);
-        libros.add(new Libro(l.id(), l.titulo(), l.autor(), l.anio(), nuevoEstado));
-        return true;
+        try {
+            Libro nuevo = new Libro(titulo, autor, anio);
+            libros.add(nuevo);
+            log.info("📚 Libro registrado: {}", nuevo.descripcionCorta());
+        } catch (IllegalArgumentException e) {
+            log.warn("❌ Error al registrar libro: {}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public List<Libro> getLibros() {
+        log.debug("Obteniendo lista de libros ({} libros)", libros.size());
         return List.copyOf(libros);
+    }
+
+    @Override
+    public boolean prestar(UUID id) {
+        Optional<Libro> libro = findLibro(id);
+        if (libro.isEmpty()) {
+            log.warn("Intento de prestar un libro inexistente ({})", id);
+            return false;
+        }
+
+        try {
+            Libro actualizado = libro.get().prestar();
+            reemplazarLibro(actualizado);
+            log.info("📕 Libro prestado: {}", actualizado.descripcionCorta());
+            return true;
+        } catch (IllegalStateException e) {
+            log.warn("❌ No se pudo prestar libro {}: {}", id, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean devolver(UUID id) {
+        Optional<Libro> libro = findLibro(id);
+        if (libro.isEmpty()) return false;
+
+        try {
+            Libro actualizado = libro.get().devolver();
+            reemplazarLibro(actualizado);
+            log.info("📖 Libro devuelto: {}", actualizado.descripcionCorta());
+            return true;
+        } catch (IllegalStateException e) {
+            log.warn("⚠️ Error al devolver libro {}: {}", id, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean reservar(UUID id) {
+        Optional<Libro> libro = findLibro(id);
+        if (libro.isEmpty()) return false;
+
+        try {
+            Libro actualizado = libro.get().reservar();
+            reemplazarLibro(actualizado);
+            log.info("📌 Libro reservado: {}", actualizado.descripcionCorta());
+            return true;
+        } catch (IllegalStateException e) {
+            log.warn("⚠️ No se pudo reservar libro {}: {}", id, e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public List<Libro> buscar(String texto) {
+        var resultados = libros.stream()
+                .filter(l -> l.titulo().toLowerCase().contains(texto.toLowerCase())
+                        || l.autor().toLowerCase().contains(texto.toLowerCase()))
+                .toList();
+
+        log.debug("Búsqueda '{}' devolvió {} resultados", texto, resultados.size());
+        return resultados;
+    }
+
+    private Optional<Libro> findLibro(UUID id) {
+        return libros.stream().filter(l -> l.id().equals(id)).findFirst();
+    }
+
+    private void reemplazarLibro(Libro nuevo) {
+        for (int i = 0; i < libros.size(); i++) {
+            if (libros.get(i).id().equals(nuevo.id())) {
+                libros.set(i, nuevo);
+                return;
+            }
+        }
     }
 }
