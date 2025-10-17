@@ -1,7 +1,5 @@
-import com.learn.biblioteca.model.EstadoLibro;
+package com.learn.biblioteca.model;
 
-import java.time.Year;
-import java.util.Objects;
 import java.util.UUID;
 
 public record Libro(UUID id, String titulo, String autor, int anio, EstadoLibro estado) {
